@@ -1,0 +1,34 @@
+---
+- !policy
+  id: app
+  annotations:
+    description: Conjur Puppet demo app policy
+  body:
+
+    # Roles
+    - !layer app
+    - !host-factory
+      annotations:
+        description: factory to create identities for new Puppet app nodes
+      layers: [ !layer app ]
+
+    # Secrets
+    - !variable
+      id: vendor-oauth-token
+      annotations:
+        description: limited token to authenticate app to vendor service endpoint
+    - !variable
+      id: postgres-password
+      annotations:
+        description: login credential for app database
+    - !group users
+    - !permit
+      role: !group users
+      privileges: [ read, execute ]
+      resources: [ !variable vendor-oauth-token, !variable postgres-password ]
+
+    # Entitlements
+    - !grant
+      role: !group users
+      members:
+        - !layer app

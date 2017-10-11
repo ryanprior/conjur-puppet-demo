@@ -1,0 +1,98 @@
+* Preparation 🙏🏻
+** TODO turn off notifications
+** TODO restart Emacs
+** TODO zoom in the frame
+#+BEGIN_SRC elisp :results output silent
+  (require 'zoom-frm)
+  (zoom-in/out 1)
+  (zoom-frm-unzoom)
+  (zoom-in/out 8)
+#+END_SRC
+
+** TODO clean up old data
+#+BEGIN_SRC sh :results output silent
+  docker-compose down
+  rm -f puppet/manifests/secrets.pp
+#+END_SRC
+
+** TODO start up new containers
+#+BEGIN_SRC sh :results output silent
+  ./start.sh
+#+END_SRC
+
+* The Conjur Puppet Demo 💪🏻
+** Introduction
+This demo was created for PuppetConf 2017
+- presented by Ryan Prior, CyberArk software engineer
+- co-presented with Jody Hunt, CyberArk global directory of customer success
+- get Conjur: https://conjur.org
+  + on GitHub: https://github.com/cyberark/conjur (AGPLv3, PRs requested)
+  + the Puppet module: https://forge.puppet.com/cyberark/conjur
+- on social media:
+  + https://twitter.com/ryanprior
+  + https://twitter.com/conjurinc
+
+** Manual Secrets Management 😳🔓️🤷🏻‍♂️
+*** The special DevOps thumb drive (aka SneakerNet 👟)
+This is a manually managed "secrets" manifest which ops must keep private:
+file:thumb-drive/secrets.pp
+#+BEGIN_SRC sh :results output silent
+  cp thumb-drive/secrets.pp puppet/manifests/secrets.pp
+#+END_SRC
+
+#+BEGIN_SRC elisp :results output silent
+  (require 'term)
+  (let ((buffer (get-buffer-create "*agent*")))
+    (with-current-buffer buffer
+      (term-mode)
+      (term-exec buffer "puppet agent" "./run-agent.sh" nil nil)))
+#+END_SRC
+
+*** Problems with manual secrets management 💥
+*** Why Hiera is not the solution 🤔📚️
+
+** Conjur Secrets Management 👌🏻🤠🔑
+#+BEGIN_SRC sh :results value verbatim
+  cp conjur/secrets.pp puppet/manifests/secrets.pp
+  docker-compose exec client /demo/load-secrets.sh
+#+END_SRC
+
+*** Generate a hostfactory token and give it to the Puppet Master
+#+BEGIN_SRC sh
+  ./generate-hostfactory-token.sh
+#+END_SRC
+
+Put this token in file:puppet/manifests/secrets.pp
+
+*** Run the Puppet agent again
+#+BEGIN_SRC elisp :results output silent
+  (let ((buffer (get-buffer-create "*agent*")))
+    (with-current-buffer buffer
+      (term-mode)
+      (term-exec buffer "puppet agent" "./run-agent.sh" nil nil)))
+#+END_SRC
+
+*** Take a look at the Conjur policy 🔎
+It's in file:conjur/app.yml
+*** Rotate a secret 🔄
+#+BEGIN_SRC sh :results verbatim
+  docker-compose exec client sh -c '
+  conjur variable values add app/postgres-password "long director down so"
+  conjur variable values add app/vendor-oauth-token "ee16b985-c72b-4cd3-abec-af38c056db00"
+  '
+#+END_SRC
+
+*** Let's do just a couple cool Conjur things! ❄️🆒
+What hosts have we created so far?
+#+BEGIN_SRC sh
+docker-compose exec client \
+  conjur list -k host
+#+END_SRC
+
+What are all the roles can fetch the app's postgres password?
+#+BEGIN_SRC sh
+  docker-compose exec client \
+                 conjur resource permitted_roles \
+                 variable:app/postgres-password \
+                 execute
+#+END_SRC

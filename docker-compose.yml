@@ -1,0 +1,40 @@
+version: '3'
+services:
+  puppet:
+    build:
+      context: .
+      dockerfile: Dockerfile.puppet
+    container_name: puppet
+    hostname: puppet
+    image: puppet/puppetserver-standalone-conjur
+    depends_on: [ conjur ]
+    volumes:
+      - ./puppet/manifests:/etc/puppetlabs/code/environments/production/manifests
+  agent:
+    image: puppet/puppet-agent-ubuntu
+    depends_on: [ conjur, puppet ]
+    volumes:
+      - ./tmp:/tmp
+  conjur:
+    image: cyberark/conjur
+    command: server -a demo -f /demo/app.yml
+    environment:
+      DATABASE_URL: postgres://postgres@database/postgres
+      CONJUR_ADMIN_PASSWORD: admin
+      CONJUR_DATA_KEY:
+    depends_on: [ database ]
+    volumes:
+      - ./conjur:/demo
+  database:
+    image: postgres:9.3
+  client:
+    image: conjurinc/cli5
+    depends_on: [ conjur ]
+    entrypoint: sleep
+    command: infinity
+    environment:
+      CONJUR_APPLIANCE_URL: http://conjur
+      CONJUR_ACCOUNT: demo
+      CONJUR_AUTHN_LOGIN: admin
+    volumes:
+      - ./conjur:/demo
