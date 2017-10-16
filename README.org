@@ -28,6 +28,7 @@ This demo was created for PuppetConf 2017
 - get Conjur: https://conjur.org
   + on GitHub: https://github.com/cyberark/conjur (AGPLv3, PRs requested)
   + the Puppet module: https://forge.puppet.com/cyberark/conjur
+  + this demo: https://github.com/ryanprior/conjur-puppet-demo
 - on social media:
   + https://twitter.com/ryanprior
   + https://twitter.com/conjurinc
