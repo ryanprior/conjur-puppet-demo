@@ -41,12 +41,8 @@ file:thumb-drive/secrets.pp
   cp thumb-drive/secrets.pp puppet/manifests/secrets.pp
 #+END_SRC
 
-#+BEGIN_SRC elisp :results output silent
-  (require 'term)
-  (let ((buffer (get-buffer-create "*agent*")))
-    (with-current-buffer buffer
-      (term-mode)
-      (term-exec buffer "puppet agent" "./run-agent.sh" nil nil)))
+#+BEGIN_SRC sh
+  ./run-agent.sh
 #+END_SRC
 
 *** Problems with manual secrets management 💥
@@ -66,11 +62,8 @@ file:thumb-drive/secrets.pp
 Put this token in file:puppet/manifests/secrets.pp
 
 *** Run the Puppet agent again
-#+BEGIN_SRC elisp :results output silent
-  (let ((buffer (get-buffer-create "*agent*")))
-    (with-current-buffer buffer
-      (term-mode)
-      (term-exec buffer "puppet agent" "./run-agent.sh" nil nil)))
+#+BEGIN_SRC sh
+  ./run-agent.sh
 #+END_SRC
 
 *** Take a look at the Conjur policy 🔎
