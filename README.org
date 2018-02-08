@@ -51,7 +51,7 @@ file:thumb-drive/secrets.pp
 ** Conjur Secrets Management 👌🏻🤠🔑
 #+BEGIN_SRC sh :results value verbatim
   cp conjur/secrets.pp puppet/manifests/secrets.pp
-  docker-compose exec client /demo/load-secrets.sh
+  docker-compose exec -T client /demo/load-secrets.sh
 #+END_SRC
 
 *** Generate a hostfactory token and give it to the Puppet Master
@@ -70,7 +70,7 @@ Put this token in file:puppet/manifests/secrets.pp
 It's in file:conjur/app.yml
 *** Rotate a secret 🔄
 #+BEGIN_SRC sh :results verbatim
-  docker-compose exec client sh -c '
+  docker-compose exec -T client sh -c '
   conjur variable values add app/postgres-password "long director down so"
   conjur variable values add app/vendor-oauth-token "ee16b985-c72b-4cd3-abec-af38c056db00"
   '
@@ -79,13 +79,13 @@ It's in file:conjur/app.yml
 *** Let's do just a couple cool Conjur things! ❄️🆒
 What hosts have we created so far?
 #+BEGIN_SRC sh
-docker-compose exec client \
+docker-compose exec -T client \
   conjur list -k host
 #+END_SRC
 
 What are all the roles can fetch the app's postgres password?
 #+BEGIN_SRC sh
-  docker-compose exec client \
+  docker-compose exec -T client \
                  conjur resource permitted_roles \
                  variable:app/postgres-password \
                  execute
